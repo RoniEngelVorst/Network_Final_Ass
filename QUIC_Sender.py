@@ -32,6 +32,28 @@ def parse_message(data):
     message = ','.join(parts[2:])
     return stream_id, seq_no, message
 
+def make_packet(strean_id, seq_no, message):
+    packet = f"{strean_id},{seq_no},{message}"
+    return packet
+
+def send_file(stream_id, file_path, server_address=("127.0.0.1", 9999)):
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Read file in chunks
+    with open(file_path, 'rb') as file:
+        seq_no = 0
+        while True:
+            data = file.read(1024)  # Adjust the chunk size as necessary
+            if not data:
+                break
+            message = f"{stream_id},{seq_no},{data.decode('latin-1')}"
+            print(f"Stream {stream_id}: Sending chunk {seq_no}")
+            client_socket.sendto(message.encode('latin-1'), server_address)
+            response, _ = client_socket.recvfrom(1024)
+            print(f"Stream {stream_id}: Server replied: {response.decode()}")
+            seq_no += 1
+
+    client_socket.close()
+    print(f"Stream {stream_id}: Completed sending {file_path}")
 
 def main():
     # getting an input from the user in order to define how many streams we want
@@ -47,10 +69,25 @@ def main():
 
     # creating an array of files
     files = []
-    data_size = random_grill()
+    data_size = 2*1024*1024
+    packet_size = random_grill()
     for i in range(num_of_streams):
         data = generate_random_bytes(data_size)
-        files.append(data)
+        file_name = f"stream_data_{i}.bin"  # Create a unique file name for each stream
+        files.append(file_name)
+        with open(file_name, 'wb') as file:
+            file.write(data)
+        print(f"Data for stream {i} saved to {file_name}")
+
+
+    # threads = []
+    # for i, file in enumerate(files):
+    #     thread = threading.Thread(target=send_file, args=(i, file))
+    #     threads.append(thread)
+    #     thread.start()
+    #
+    # for thread in threads:
+    #     thread.join()
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_socket.bind(("127.0.0.1", 9999))
