@@ -1,25 +1,19 @@
-
-#receiver is server
 import socket
 import threading
+
+from packet import Packet
+
 
 def handle_client(server_socket, stop_event):
     while not stop_event.is_set():
         data, addr = server_socket.recvfrom(2048)
         if data:
-            stream_id, seq_no, message = parse_message(data)
-            if message == "END":
-                print(f"Stream {stream_id}: Received end of transmission signal")
+            packet = Packet.decode(data)
+            if packet.data == b"END":
+                print(f"Stream {packet.stream_id}: Received end of transmission signal")
                 stop_event.set()
                 break
-            print(f"Stream {stream_id}: Received message {seq_no} - {message} from {addr}")
-
-def parse_message(data):
-    parts = data.decode('latin-1').split(',')
-    stream_id = int(parts[0])
-    seq_no = int(parts[1])
-    message = ','.join(parts[2:])
-    return stream_id, seq_no, message
+            print(f"Stream {packet.stream_id}: Received message {packet.seq_no} from {addr}")
 
 def main():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
