@@ -103,8 +103,8 @@ def main():
         packet_rates.append(packets_sent / elapsed_time)
 
 
-    # Plotting the Data Rate
-    plt.figure(figsize=(10, 5))
+    # Plotting the Data Rate and Packet Rate
+    plt.figure(figsize=(14, 6))
 
     # Data Rate Plot
     plt.subplot(1, 2, 1)
@@ -114,10 +114,11 @@ def main():
     plt.ylabel('Data Rate (bytes/second)')
     plt.title('Average Data Rate per Stream')
     plt.grid(True)
+    plt.xticks(ticks=stream_ids)  # Ensure all stream IDs are shown
 
     # Increase number of ticks and grid lines
     plt.gca().yaxis.set_major_locator(plt.MaxNLocator(10))  # Y-axis ticks
-    plt.gca().xaxis.set_major_locator(plt.MaxNLocator(10))  # X-axis ticks
+    plt.gca().xaxis.set_major_locator(plt.MaxNLocator(len(stream_ids)))  # X-axis ticks
 
     # Packet Rate Plot
     plt.subplot(1, 2, 2)
@@ -127,10 +128,11 @@ def main():
     plt.ylabel('Packet Rate (packets/second)')
     plt.title('Average Packet Rate per Stream')
     plt.grid(True)
+    plt.xticks(ticks=stream_ids)  # Ensure all stream IDs are shown
 
     # Increase number of ticks and grid lines
     plt.gca().yaxis.set_major_locator(plt.MaxNLocator(10))  # Y-axis ticks
-    plt.gca().xaxis.set_major_locator(plt.MaxNLocator(10))  # X-axis ticks
+    plt.gca().xaxis.set_major_locator(plt.MaxNLocator(len(stream_ids)))  # X-axis ticks
 
     plt.tight_layout()
     plt.show()
