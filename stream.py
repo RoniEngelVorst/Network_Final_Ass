@@ -11,6 +11,9 @@ class Stream:
         self.packet_size = random_grill()
         self.seq_no = 0
 
+    def random_grill(self):
+        return random.randint(1000, 2000)
+
     def read_packet(self):
         with open(self.file_path, 'rb') as file:
             while True:
