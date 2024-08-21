@@ -3,7 +3,7 @@ import threading
 
 from packet import Packet
 
-
+# Function to handle incoming packets
 def handle_client(server_socket, stop_event):
     while not stop_event.is_set():
         data, addr = server_socket.recvfrom(2048)

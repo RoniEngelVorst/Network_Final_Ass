@@ -6,9 +6,11 @@ from stream import Stream
 from connection import Connection
 from packet import Packet
 
+# Generating random bytes for data
 def generate_random_bytes(size):
     return os.urandom(size)
 
+# Function that send a stream of packets
 def send_stream(stream_id, file_path):
     stream = Stream(stream_id, file_path)
     connection = Connection()
@@ -17,19 +19,24 @@ def send_stream(stream_id, file_path):
     start_time = time.time()
 
     try:
+        # Iteration over all packets in the stream
         for packet in stream.read_packet():
             connection.send_packet(packet)
             total_bytes_sent += len(packet.data)
             total_packets_sent += 1
+        # Send an end packet to indicate completion of the stream
         end_packet = Packet(stream_id, -1, b"END")
         connection.send_packet(end_packet)
         print(f"Stream {stream_id}: Completed sending {file_path}")
     finally:
+        # Ensure the connection is closed and calculate the elapsed time
         connection.close()
         elapsed_time = time.time() - start_time
         return total_bytes_sent, total_packets_sent, elapsed_time
 
+# Main function
 def main():
+    # Input number of streams
     num_of_streams = input("Please enter the number of streams you want: ")
     try:
         num_of_streams = int(num_of_streams)
@@ -38,8 +45,9 @@ def main():
         exit()
 
     files = []
-    data_size = 2 * 1024 * 1024
+    data_size = 2 * 1024 * 1024  # Size of each data file in bytes
     for i in range(num_of_streams):
+        # Generate random data and save it to a file
         data = generate_random_bytes(data_size)
         file_name = f"stream_data_{i}.bin"
         files.append(file_name)
@@ -50,16 +58,19 @@ def main():
     threads = []
     results = []
 
+    # Function to be executed in each thread
     def thread_function(i, file):
         result = send_stream(i, file)
         results.append((i, result))
-        os.remove(file)
+        os.remove(file)  # Remove the file after sending
 
+    # Create and start a thread for each stream
     for i, file in enumerate(files):
         thread = threading.Thread(target=thread_function, args=(i, file))
         threads.append(thread)
         thread.start()
 
+    # Wait for all threads to complete
     for thread in threads:
         thread.join()
 
@@ -72,6 +83,7 @@ def main():
     total_time = 0
     print("\nStream Statistics:")
     for stream_id, (bytes_sent, packets_sent, elapsed_time) in results:
+        # Calculate data rate and packet rate for each stream
         data_rate = bytes_sent / elapsed_time
         packet_rate = packets_sent / elapsed_time
         total_bytes += bytes_sent
@@ -83,6 +95,7 @@ def main():
         print(f"  Data rate: {data_rate:.2f} bytes/second")
         print(f"  Packet rate: {packet_rate:.2f} packets/second")
 
+    # Calculate average data rate and packet rate across all streams
     avg_data_rate = total_bytes / total_time
     avg_packet_rate = total_packets / total_time
 
@@ -92,7 +105,7 @@ def main():
     print(f"Average data rate: {avg_data_rate:.2f} bytes/second")
     print(f"Average packet rate: {avg_packet_rate:.2f} packets/second")
 
-    # Plotting the statistics
+    # Prepare data for plotting
     stream_ids = []
     data_rates = []
     packet_rates = []
@@ -101,7 +114,6 @@ def main():
         stream_ids.append(stream_id)
         data_rates.append(bytes_sent / elapsed_time)
         packet_rates.append(packets_sent / elapsed_time)
-
 
     # Plotting the Data Rate and Packet Rate
     plt.figure(figsize=(14, 6))

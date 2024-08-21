@@ -1,5 +1,6 @@
 import socket
 
+# Connection class to send packets to the server
 class Connection:
     def __init__(self, server_address=("127.0.0.1", 9999)):
         self.server_address = server_address
